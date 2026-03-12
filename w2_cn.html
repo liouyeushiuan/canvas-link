@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在開啟 Canvas 作業...</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0f2f5; color: #1c1e21; }
+        .card { background: white; padding: 40px 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 320px; width: 90%; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #E00122; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { margin: 10px 0; font-size: 1.2rem; }
+        p { color: #65676b; font-size: 0.9rem; line-height: 1.5; }
+        .btn { display: inline-block; margin-top: 25px; padding: 12px 24px; background: #E00122; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: background 0.2s; }
+        .btn:hover { background: #b3011b; }
+        .notice { margin-top: 20px; font-size: 0.75rem; color: #999; border-top: 1px solid #eee; pt: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="loader"></div>
+    <h2>正在嘗試跳轉 App</h2>
+    <p>如果您的手機已安裝 Canvas Student，系統將自動開啟頁面。</p>
+    
+    <a id="web-link" href="#" class="btn">手動開啟網頁版</a>
+
+    <div class="notice">
+        <p id="hint">若頁面無反應，請確保已登入 App<br>或嘗試重新整理網頁</p>
+    </div>
+</div>
+
+<script>
+    // ======= 配置區：請修改下方的網址 =======
+    var CONFIG = {
+        // App 協議網址
+        appUrl: "canvas-courses://canvas.instructure.com/courses/13418337/pages/week-1-practice-2?module_item_id=148942505",
+        // 備用網頁網址
+        webUrl: "https://canvas.instructure.com/courses/13418337/pages/week-1-practice-2?module_item_id=148942505"
+    };
+    // =====================================
+
+    var webBtn = document.getElementById('web-link');
+    webBtn.href = CONFIG.webUrl;
+
+    // 加上隨機參數防止 App 緩存 (Cache Busting)
+    var cacheBuster = "&t=" + new Date().getTime();
+    var finalAppUrl = CONFIG.appUrl + cacheBuster;
+
+    // 1. 執行跳轉
+    function tryOpenApp() {
+        window.location.href = finalAppUrl;
+    }
+
+    // 偵測 LINE 內建瀏覽器
+    var isLine = /Line/i.test(navigator.userAgent);
+    if (isLine) {
+        document.getElementById('hint').innerHTML = "<b style='color:#E00122;'>偵測到 LINE！</b><br>請點選右上角 [三個點] 或 [分享] <br>選擇「使用預設瀏覽器開啟」才能跳轉 App。";
+    } else {
+        // 非 LINE 環境則自動執行跳轉
+        tryOpenApp();
+        
+        // 2. 智慧備援邏輯：2.5 秒後如果還留在網頁，自動轉網頁版
+        setTimeout(function() {
+            if (!document.hidden) {
+                console.log("App 開啟失敗或未安裝，轉向網頁版...");
+                window.location.href = CONFIG.webUrl;
+            }
+        }, 2500);
+    }
+</script>
+
+</body>
+</html>
